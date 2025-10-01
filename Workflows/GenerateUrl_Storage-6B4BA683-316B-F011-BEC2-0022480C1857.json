@@ -1,0 +1,124 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_azureblob": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "capmx_sharedazureblob_4478f"
+        },
+        "api": {
+          "name": "shared_azureblob"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "undefined",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {},
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "containerPath": {
+                  "type": "string",
+                  "title": "Container Path",
+                  "description": "The container/folder path to list files from"
+                },
+                "filePath": {
+                  "type": "string",
+                  "title": "File Path",
+                  "description": "The path to the blob file for which to create a SAS URI"
+                }
+              },
+              "required": [
+                "filePath"
+              ]
+            },
+            "triggerAuthenticationType": "All"
+          }
+        }
+      },
+      "actions": {
+        "Try_Scope": {
+          "actions": {
+            "Create_SAS_URI_by_path_(V2)": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "storageAccountName": "@triggerBody()?['containerPath']",
+                  "path": "@triggerBody()['filePath']",
+                  "policy/Permissions": "Read"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_azureblob",
+                  "connectionName": "shared_azureblob",
+                  "operationId": "CreateShareLinkByPath_V2"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            }
+          },
+          "runAfter": {},
+          "type": "Scope"
+        },
+        "Success_Response": {
+          "runAfter": {
+            "Try_Scope": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "webUrl": "@body('Create_SAS_URI_by_path_(V2)')['WebUrl']",
+              "message": "SAS URI created successfully"
+            }
+          }
+        },
+        "Error_Response": {
+          "runAfter": {
+            "Try_Scope": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 500,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "error": "Failed to create SAS URI",
+              "message": "@if(equals(result('Try_Scope')[0]['status'], 'Failed'), result('Try_Scope')[0]['error']['message'], 'An unexpected error occurred while creating the SAS URI')",
+              "details": "@if(equals(result('Try_Scope')[0]['status'], 'Failed'), result('Try_Scope')[0]['error'], null)"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

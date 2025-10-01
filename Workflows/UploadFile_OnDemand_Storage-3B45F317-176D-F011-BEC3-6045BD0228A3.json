@@ -1,0 +1,252 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_azureblob": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "capmx_sharedazureblob_4478f"
+        },
+        "api": {
+          "name": "shared_azureblob"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "bbc6df9a-02b5-41fc-8f8a-973c7eaf69c9"
+          },
+          "type": "Request",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "fileName": {
+                  "type": "string",
+                  "title": "File Name",
+                  "description": "The name of the file to upload"
+                },
+                "fileContent": {
+                  "type": "string",
+                  "title": "File Content",
+                  "description": "Base64 encoded file content"
+                },
+                "containerPath": {
+                  "type": "string",
+                  "title": "Container Path",
+                  "description": "The account name"
+                },
+                "folderName": {
+                  "type": "string",
+                  "title": "Folder Name",
+                  "description": "The folder path for the file"
+                },
+                "fileSize": {
+                  "type": "integer",
+                  "title": "File Size",
+                  "description": "Size of the file in bytes"
+                },
+                "contentType": {
+                  "type": "string",
+                  "title": "Content Type",
+                  "description": "MIME type of the file"
+                }
+              },
+              "required": [
+                "fileName",
+                "fileContent",
+                "containerPath",
+                "folderName",
+                "fileSize",
+                "contentType"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Initialize_variable_-_Success": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "ab3b58ee-23b1-4db4-bb3a-92255d755868"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Success",
+                "type": "boolean",
+                "value": false
+              }
+            ]
+          }
+        },
+        "Initialize_variable_-_Error_Message": {
+          "runAfter": {
+            "Initialize_variable_-_Success": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "9a23ce34-da19-4f1e-b802-6c6e68a790c4"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ErrorMessage",
+                "type": "string",
+                "value": ""
+              }
+            ]
+          }
+        },
+        "Initialize_variable_-_File_URL": {
+          "runAfter": {
+            "Initialize_variable_-_Error_Message": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "18777a3e-2f3b-4a18-b4a3-475673dbd9e9"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "FileURL",
+                "type": "string",
+                "value": ""
+              }
+            ]
+          }
+        },
+        "Try_Upload_File": {
+          "actions": {
+            "Create_blob_V2": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "8a553eae-f3a3-4ca5-987b-d178eb232929"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_azureblob",
+                  "connectionName": "shared_azureblob",
+                  "operationId": "CreateFile_V2"
+                },
+                "parameters": {
+                  "dataset": "@triggerBody()?['containerPath']",
+                  "folderPath": "@triggerBody()?['folderName']",
+                  "name": "@triggerBody()?['fileName']",
+                  "body": "@base64ToBinary(triggerBody()?['fileContent'])",
+                  "Content-Type": "@triggerBody()?['contentType']"
+                },
+                "authentication": {
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']",
+                  "type": "Raw"
+                }
+              }
+            },
+            "Set_Success_to_True": {
+              "runAfter": {
+                "Create_blob_V2": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "f71baa0a-31ce-4bfe-828f-41da33474028"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "Success",
+                "value": true
+              }
+            },
+            "Set_File_URL": {
+              "runAfter": {
+                "Set_Success_to_True": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "64dc405f-067b-48ba-a894-11ea9d92b1b9"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "FileURL",
+                "value": "@body('Create_blob_V2')?['Path']"
+              }
+            }
+          },
+          "runAfter": {
+            "Initialize_variable_-_File_URL": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "087968c5-df7f-4351-b812-e7c9479cb368"
+          },
+          "type": "Scope"
+        },
+        "Catch_Upload_Errors": {
+          "actions": {
+            "Set_Error_Message": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "dabdda47-1574-4d46-b7c1-5df7ba9ab082"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "ErrorMessage",
+                "value": "Failed to upload file: @{triggerBody()?['fileName']}. Error details: @{result('Try_Upload_File')?[0]?['error']?['message']}"
+              }
+            },
+            "Set_Success_to_False": {
+              "runAfter": {
+                "Set_Error_Message": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "199c7465-bd7a-4f4d-84e2-b053e2843465"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "Success",
+                "value": false
+              }
+            }
+          },
+          "runAfter": {
+            "Try_Upload_File": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "1aa0c07f-6280-49cc-9dad-12298f9c3dfc"
+          },
+          "type": "Scope"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

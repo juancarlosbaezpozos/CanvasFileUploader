@@ -1,0 +1,171 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_azureblob": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "capmx_sharedazureblob_4478f"
+        },
+        "api": {
+          "name": "shared_azureblob"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "undefined",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "d86c3244-2697-4f49-b9b9-2579cc9e44ed"
+          },
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "storageAccountName": {
+                  "type": "string",
+                  "title": "Storage Account Name",
+                  "description": "The storage account name or blob endpoint"
+                },
+                "filePath": {
+                  "type": "string",
+                  "title": "File Path",
+                  "description": "The path to the blob file to download"
+                },
+                "fileName": {
+                  "type": "string",
+                  "title": "File Name",
+                  "description": "The name of the file for download (optional)"
+                }
+              },
+              "required": [
+                "storageAccountName",
+                "filePath"
+              ]
+            },
+            "triggerAuthenticationType": "All"
+          }
+        }
+      },
+      "actions": {
+        "Try_Scope": {
+          "actions": {
+            "Get_blob_content_(V2)": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "220cc983-38fe-4612-a917-e635e310de86"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_azureblob",
+                  "operationId": "GetFileContent_V2",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_azureblob"
+                },
+                "parameters": {
+                  "dataset": "@triggerBody()['storageAccountName']",
+                  "id": "@triggerBody()['filePath']",
+                  "inferContentType": true
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Get_blob_metadata_(V2)": {
+              "runAfter": {
+                "Get_blob_content_(V2)": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "cf4260e8-536b-47db-9d7d-3b7bd8916317"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_azureblob",
+                  "operationId": "GetFileMetadata_V2",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_azureblob"
+                },
+                "parameters": {
+                  "dataset": "@triggerBody()['storageAccountName']",
+                  "id": "@triggerBody()['filePath']"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            }
+          },
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "f0888998-8d2e-484f-8f1f-efee7472440c"
+          },
+          "type": "Scope"
+        },
+        "Success_Response": {
+          "runAfter": {
+            "Try_Scope": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "7f2df9b2-f2ef-4bab-a09b-ebde8eafcbca"
+          },
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "fileName": "@coalesce(triggerBody()?['fileName'], body('Get_blob_metadata_(V2)')?['Name'])",
+              "fileContent": "@base64(body('Get_blob_content_(V2)'))",
+              "contentType": "@body('Get_blob_metadata_(V2)')?['MediaType']",
+              "fileSize": "@body('Get_blob_metadata_(V2)')?['Size']",
+              "message": "File content retrieved successfully"
+            }
+          }
+        },
+        "Error_Response": {
+          "runAfter": {
+            "Try_Scope": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "5631ea42-d520-4160-88a6-92022577502c"
+          },
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": 500,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "error": "Failed to retrieve file content",
+              "message": "@if(equals(result('Try_Scope')[0]['status'], 'Failed'), result('Try_Scope')[0]['error']['message'], 'An unexpected error occurred while retrieving the file content')",
+              "details": "@if(equals(result('Try_Scope')[0]['status'], 'Failed'), result('Try_Scope')[0]['error'], null)"
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

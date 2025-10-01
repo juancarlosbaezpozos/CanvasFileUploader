@@ -1,0 +1,402 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_azureblob": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "capmx_sharedazureblob_4478f"
+        },
+        "api": {
+          "name": "shared_azureblob"
+        }
+      },
+      "shared_azureblob-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "capmx_sharedazureblob_1f778"
+        },
+        "api": {
+          "name": "shared_azureblob"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "0f4ddfd4-70c7-405f-9407-e04dc873871a"
+          },
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "containerPath": {
+                  "type": "string",
+                  "title": "Container Path",
+                  "description": "The container/folder path to list files from"
+                },
+                "folderName": {
+                  "type": "string",
+                  "title": "Folder Name",
+                  "description": "Optional specific folder name within the container"
+                }
+              },
+              "required": [
+                "containerPath"
+              ]
+            },
+            "triggerAuthenticationType": "All"
+          }
+        }
+      },
+      "actions": {
+        "Initialize_variable_-_Success": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "2f3fba6c-c221-4ba9-ba8b-4ced22803dad"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Success",
+                "type": "boolean",
+                "value": false
+              }
+            ]
+          }
+        },
+        "Initialize_variable_-_Error_Message": {
+          "runAfter": {
+            "Initialize_variable_-_Success": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "72c38829-eba2-4526-9b9e-5869d29c767e"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ErrorMessage",
+                "type": "string",
+                "value": ""
+              }
+            ]
+          }
+        },
+        "Initialize_variable_-_Files_Array": {
+          "runAfter": {
+            "Initialize_variable_-_Error_Message": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "1d4dd7be-95bd-449a-8198-f6062d8631cf"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "FilesArray",
+                "type": "array",
+                "value": []
+              }
+            ]
+          }
+        },
+        "Try_List_Files": {
+          "actions": {
+            "Condition_-_Check_if_folder_name_provided": {
+              "actions": {
+                "List_blobs_V2_-_With_Folder": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "d9520e6d-0239-45cb-8e6a-437edcc4950c"
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connectionName": "shared_azureblob",
+                      "operationId": "ListFolder_V4",
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_azureblob"
+                    },
+                    "parameters": {
+                      "dataset": "@triggerBody()?['containerPath']",
+                      "id": "@encodeURIComponent(triggerBody()?['folderName'])",
+                      "nextPageMarker": "",
+                      "useFlatListing": false
+                    },
+                    "authentication": "@parameters('$authentication')"
+                  }
+                },
+                "For_each_blob_with_folder": {
+                  "foreach": "@body('List_blobs_V2_-_With_Folder')?['value']",
+                  "actions": {
+                    "Condition_-_Check_if_not_folder": {
+                      "actions": {
+                        "Append_to_array_variable_-_With_Folder": {
+                          "runAfter": {},
+                          "metadata": {
+                            "operationMetadataId": "900ba1c0-1d10-4c03-a4b4-66e7a45b97ed"
+                          },
+                          "type": "AppendToArrayVariable",
+                          "inputs": {
+                            "name": "FilesArray",
+                            "value": {
+                              "name": "@items('For_each_blob_with_folder')?['Name']",
+                              "size": "@items('For_each_blob_with_folder')?['Size']",
+                              "url": "@items('For_each_blob_with_folder')?['Path']",
+                              "lastModified": "@items('For_each_blob_with_folder')?['LastModified']",
+                              "metadata": {
+                                "contentType": "@items('For_each_blob_with_folder')?['MediaType']",
+                                "displayName": "@items('For_each_blob_with_folder')?['DisplayName']"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "runAfter": {},
+                      "expression": {
+                        "and": [
+                          {
+                            "equals": [
+                              "@items('For_each_blob_with_folder')?['IsFolder']",
+                              false
+                            ]
+                          }
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "d1a0af99-3b5f-490f-acb3-6ea01aa59e3c"
+                      },
+                      "type": "If"
+                    }
+                  },
+                  "runAfter": {
+                    "List_blobs_V2_-_With_Folder": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "4bc2ceb8-c1bd-4c27-a6f3-4537e7cf473d"
+                  },
+                  "type": "Foreach"
+                }
+              },
+              "runAfter": {},
+              "else": {
+                "actions": {
+                  "List_blobs_V2_-_No_Folder": {
+                    "runAfter": {},
+                    "metadata": {
+                      "operationMetadataId": "891684ba-789e-404d-96f2-e47e8d5749bb"
+                    },
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "host": {
+                        "connectionName": "shared_azureblob-1",
+                        "operationId": "ListRootFolder_V4",
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_azureblob"
+                      },
+                      "parameters": {
+                        "dataset": "@triggerBody()?['containerPath']",
+                        "nextPageMarker": ""
+                      },
+                      "authentication": "@parameters('$authentication')"
+                    }
+                  },
+                  "Apply_to_each": {
+                    "foreach": "@outputs('List_blobs_V2_-_No_Folder')?['body/value']",
+                    "actions": {
+                      "Condition": {
+                        "actions": {
+                          "Append_to_array_variable": {
+                            "runAfter": {},
+                            "metadata": {
+                              "operationMetadataId": "318eb5f6-f20e-4ae9-8ad2-3394b8bd350c"
+                            },
+                            "type": "AppendToArrayVariable",
+                            "inputs": {
+                              "name": "FilesArray",
+                              "value": {
+                                "name": "@item()?['Name']"
+                              }
+                            }
+                          }
+                        },
+                        "runAfter": {},
+                        "expression": {
+                          "and": [
+                            {
+                              "equals": [
+                                "@item()?['IsFolder']",
+                                false
+                              ]
+                            }
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "b2bea2fb-7f2a-40bf-b4b2-e3883e1bf42a"
+                        },
+                        "type": "If"
+                      }
+                    },
+                    "runAfter": {
+                      "List_blobs_V2_-_No_Folder": [
+                        "Succeeded"
+                      ]
+                    },
+                    "metadata": {
+                      "operationMetadataId": "b35aa915-50da-49ae-9f49-826f75692263"
+                    },
+                    "type": "Foreach"
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "not": {
+                      "equals": [
+                        "@triggerBody()?['folderName']",
+                        "@null"
+                      ]
+                    }
+                  },
+                  {
+                    "not": {
+                      "equals": [
+                        "@triggerBody()?['folderName']",
+                        ""
+                      ]
+                    }
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "c64df4ea-4b34-44c2-85cb-a059083f86f2"
+              },
+              "type": "If"
+            },
+            "Set_Success_to_True": {
+              "runAfter": {
+                "Condition_-_Check_if_folder_name_provided": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "495abfde-2fb0-4bd7-aefb-c42de60eb52d"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "Success",
+                "value": true
+              }
+            }
+          },
+          "runAfter": {
+            "Initialize_variable_-_Files_Array": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "6180ed4d-2698-48e8-aeb7-eaf950c25819"
+          },
+          "type": "Scope"
+        },
+        "Catch_List_Errors": {
+          "actions": {
+            "Set_Error_Message": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "0301a58b-a9b3-4a30-a3b2-c1cd63572d8c"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "ErrorMessage",
+                "value": "Failed to list files from container."
+              }
+            },
+            "Set_Success_to_False": {
+              "runAfter": {
+                "Set_Error_Message": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "a5e63a89-fe2e-487b-ad64-5cb7d5eb8b45"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "Success",
+                "value": false
+              }
+            }
+          },
+          "runAfter": {
+            "Try_List_Files": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d3da92f7-a4b0-43f1-b37e-112126d5480e"
+          },
+          "type": "Scope"
+        },
+        "Response": {
+          "runAfter": {
+            "Try_List_Files": [
+              "Succeeded",
+              "TimedOut",
+              "Skipped",
+              "Failed"
+            ],
+            "Catch_List_Errors": [
+              "Succeeded",
+              "TimedOut",
+              "Skipped",
+              "Failed"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "f1f8d1b1-3b14-4afb-a6fe-51476f6b6835"
+          },
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": "@if(variables('Success'), 200, 400)",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": "@variables('Success')",
+              "files": "@if(variables('Success'), variables('FilesArray'), json('[]'))",
+              "error": "@if(variables('Success'), null, variables('ErrorMessage'))",
+              "flowRunId": "@workflow()?['run']?['name']"
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

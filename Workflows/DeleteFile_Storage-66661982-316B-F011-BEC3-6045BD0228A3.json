@@ -1,0 +1,345 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_azureblob": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "capmx_sharedazureblob_4478f"
+        },
+        "api": {
+          "name": "shared_azureblob"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "d7f7e6e7-d355-4a42-a4ac-eabb359d8fbb"
+          },
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "fileName": {
+                  "type": "string",
+                  "title": "File Name",
+                  "description": "The name of the file to delete"
+                },
+                "containerPath": {
+                  "type": "string",
+                  "title": "Container Path",
+                  "description": "The container/folder path where the file is located"
+                },
+                "folderName": {
+                  "type": "string",
+                  "title": "Folder Name",
+                  "description": "Optional specific folder name within the container"
+                }
+              },
+              "required": [
+                "fileName",
+                "containerPath"
+              ]
+            },
+            "triggerAuthenticationType": "All"
+          }
+        }
+      },
+      "actions": {
+        "Initialize_variable_-_Success": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "83570ef5-d007-4d04-a21b-6de7c6b17f4d"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Success",
+                "type": "boolean",
+                "value": false
+              }
+            ]
+          }
+        },
+        "Initialize_variable_-_Error_Message": {
+          "runAfter": {
+            "Initialize_variable_-_Success": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "4af9dab9-0f45-40d0-9c7f-2233285f2210"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "ErrorMessage",
+                "type": "string",
+                "value": ""
+              }
+            ]
+          }
+        },
+        "Initialize_variable_-_File_Path": {
+          "runAfter": {
+            "Initialize_variable_-_Error_Message": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "adb5215e-b9d2-4238-a70a-ec918f7808dd"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "FilePath",
+                "type": "string",
+                "value": ""
+              }
+            ]
+          }
+        },
+        "Construct_File_Path": {
+          "actions": {
+            "Set_File_Path_with_Folder": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "6fa85243-1b40-49d7-873c-1956cfbc28d0"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "FilePath",
+                "value": "@{triggerBody()?['folderName']}/@{triggerBody()?['fileName']}"
+              }
+            }
+          },
+          "runAfter": {
+            "Initialize_variable_-_File_Path": [
+              "Succeeded"
+            ]
+          },
+          "else": {
+            "actions": {
+              "Set_File_Path_without_Folder": {
+                "runAfter": {},
+                "metadata": {
+                  "operationMetadataId": "583673d0-91a6-4269-b6cf-922bb4a95d79"
+                },
+                "type": "SetVariable",
+                "inputs": {
+                  "name": "FilePath",
+                  "value": "@triggerBody()?['fileName']"
+                }
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "not": {
+                  "equals": [
+                    "@triggerBody()?['folderName']",
+                    "@null"
+                  ]
+                }
+              },
+              {
+                "not": {
+                  "equals": [
+                    "@empty(triggerBody()?['folderName'])",
+                    "@true"
+                  ]
+                }
+              }
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "8aa2f2d9-0bbf-489c-beb4-e8f349bb99aa"
+          },
+          "type": "If"
+        },
+        "Try_Delete_File": {
+          "actions": {
+            "Delete_blob_V2": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "1b7104f6-7e36-4c20-bd3b-cdb100efaf3f"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_azureblob",
+                  "operationId": "DeleteFile_V2",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_azureblob"
+                },
+                "parameters": {
+                  "dataset": "@triggerBody()?['containerPath']",
+                  "id": "@encodeURIComponent(variables('FilePath'))"
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            },
+            "Set_Success_to_True": {
+              "runAfter": {
+                "Delete_blob_V2": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "abaf5a74-0088-4413-be58-e8a1b5a98d49"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "Success",
+                "value": true
+              }
+            }
+          },
+          "runAfter": {
+            "Construct_File_Path": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "04351168-b675-49e2-8a02-6807b25cca8c"
+          },
+          "type": "Scope"
+        },
+        "Catch_Delete_Errors": {
+          "actions": {
+            "Check_if_File_Not_Found": {
+              "actions": {
+                "Set_Error_Message_Not_Found": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "30187ee5-b02e-4895-bf79-2d509cbbae0c"
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "ErrorMessage",
+                    "value": "File not found or already deleted: @{triggerBody()?['fileName']}"
+                  }
+                }
+              },
+              "runAfter": {},
+              "else": {
+                "actions": {
+                  "Set_Error_Message_General": {
+                    "runAfter": {},
+                    "metadata": {
+                      "operationMetadataId": "3779e446-7ad8-4cdf-8db1-642270dedd2b"
+                    },
+                    "type": "SetVariable",
+                    "inputs": {
+                      "name": "ErrorMessage",
+                      "value": "Failed to delete file: @{triggerBody()?['fileName']}. Error details: @{result('Try_Delete_File')?[0]?['error']?['message']}"
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "or": [
+                  {
+                    "contains": [
+                      "@result('Try_Delete_File')?[0]?['error']?['message']",
+                      "BlobNotFound"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@result('Try_Delete_File')?[0]?['error']?['message']",
+                      "404"
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "5960c1f5-d49e-43f5-85eb-f26f4ba8c59b"
+              },
+              "type": "If"
+            },
+            "Set_Success_to_False": {
+              "runAfter": {
+                "Check_if_File_Not_Found": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "9fe6df9b-1302-4a3d-99fc-b932c40d23a5"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "Success",
+                "value": false
+              }
+            }
+          },
+          "runAfter": {
+            "Try_Delete_File": [
+              "Failed",
+              "Skipped",
+              "TimedOut"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "024b379d-e455-4d1d-858a-035e4e642f34"
+          },
+          "type": "Scope"
+        },
+        "Response": {
+          "runAfter": {
+            "Try_Delete_File": [
+              "Succeeded",
+              "TimedOut",
+              "Skipped",
+              "Failed"
+            ],
+            "Catch_Delete_Errors": [
+              "Succeeded",
+              "TimedOut",
+              "Skipped",
+              "Failed"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "14905c07-30fa-4e30-ab3d-79c47850abee"
+          },
+          "type": "Response",
+          "kind": "Http",
+          "inputs": {
+            "statusCode": "@if(variables('Success'), 200, 400)",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "success": "@variables('Success')",
+              "fileName": "@triggerBody()?['fileName']",
+              "error": "@if(variables('Success'), null, variables('ErrorMessage'))",
+              "flowRunId": "@workflow()?['run']?['name']"
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}
