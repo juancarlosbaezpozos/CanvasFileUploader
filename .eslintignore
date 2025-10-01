@@ -1,0 +1,4 @@
+azureuploader/
+**/node_modules/
+**/bin/
+**/obj/

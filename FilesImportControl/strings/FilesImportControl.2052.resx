@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Admin Configuration Mode -->
+  <data name="ConfigureRuntimeProperties" xml:space="preserve">
+    <value>配置文件上传控件的运行时属性</value>
+  </data>
+  <data name="MaxTotalFileSize" xml:space="preserve">
+    <value>最大文件总大小 (MB)</value>
+  </data>
+  <data name="Current" xml:space="preserve">
+    <value>当前</value>
+  </data>
+  <data name="Original" xml:space="preserve">
+    <value>原始</value>
+  </data>
+  <data name="AllowedFileTypes" xml:space="preserve">
+    <value>允许的文件类型</value>
+  </data>
+  <data name="FileTypePlaceholder" xml:space="preserve">
+    <value>例如：.pdf;.docx;.txt 或使用 * 表示所有类型</value>
+  </data>
+  <data name="FileTypeInstructions" xml:space="preserve">
+    <value>使用分号 (;) 或逗号 (,) 分隔多种类型。使用 * 允许所有类型。</value>
+  </data>
+  <data name="OriginalSetting" xml:space="preserve">
+    <value>原始设置</value>
+  </data>
+  <data name="ResetToOriginal" xml:space="preserve">
+    <value>重置为原始</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>应用</value>
+  </data>
+  <data name="ConfigurationStatus" xml:space="preserve">
+    <value>配置状态：</value>
+  </data>
+  <data name="MaxFileSizeLimit" xml:space="preserve">
+    <value>最大文件大小限制</value>
+  </data>
+  <data name="AllowedFileTypesStatus" xml:space="preserve">
+    <value>允许的文件类型</value>
+  </data>
+  <data name="ConfigurationNote" xml:space="preserve">
+    <value>注意：这些设置将持续有效，直到控件在设计时或运行时重新配置。</value>
+  </data>
+  <!-- Upload Area -->
+  <data name="ViewingFilesIn" xml:space="preserve">
+    <value>查看文件位置</value>
+  </data>
+  <data name="Container" xml:space="preserve">
+    <value>容器</value>
+  </data>
+  <data name="NoFilesFound" xml:space="preserve">
+    <value>未找到文件</value>
+  </data>
+  <data name="OrDropFilesHere" xml:space="preserve">
+    <value>或将文件拖放到此处</value>
+  </data>
+  <data name="MaximumTotalSize" xml:space="preserve">
+    <value>最大总大小</value>
+  </data>
+  <data name="CurrentFiles" xml:space="preserve">
+    <value>当前文件</value>
+  </data>
+  <!-- File List Display -->
+  <data name="ExistingFiles" xml:space="preserve">
+    <value>现有文件</value>
+  </data>
+  <data name="FilesUploaded" xml:space="preserve">
+    <value>已上传文件</value>
+  </data>
+  <data name="Existing" xml:space="preserve">
+    <value>现有</value>
+  </data>
+  <data name="TotalInBatch" xml:space="preserve">
+    <value>批次总数</value>
+  </data>
+  <data name="Valid" xml:space="preserve">
+    <value>有效</value>
+  </data>
+  <data name="Invalid" xml:space="preserve">
+    <value>无效</value>
+  </data>
+  <data name="FilesReady" xml:space="preserve">
+    <value>文件就绪</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="UploadAll" xml:space="preserve">
+    <value>全部上传</value>
+  </data>
+  <data name="ClearNewFiles" xml:space="preserve">
+    <value>清除新文件</value>
+  </data>
+  <data name="ClearUploadedFilesTooltip" xml:space="preserve">
+    <value>清除已上传的文件（它们现在在现有文件中）</value>
+  </data>
+  <data name="ClearNewFilesTooltip" xml:space="preserve">
+    <value>清除新文件</value>
+  </data>
+  <data name="NoFilesExistInDirectory" xml:space="preserve">
+    <value>此目录中不存在文件</value>
+  </data>
+  <data name="Directory" xml:space="preserve">
+    <value>目录</value>
+  </data>
+  <data name="UploadFilesToGetStarted" xml:space="preserve">
+    <value>上传文件开始使用</value>
+  </data>
+  <data name="ExistingFilesIn" xml:space="preserve">
+    <value>现有文件位于</value>
+  </data>
+  <data name="Uploaded" xml:space="preserve">
+    <value>已上传</value>
+  </data>
+  <data name="View" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="Generating" xml:space="preserve">
+    <value>下载中...</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Deleting" xml:space="preserve">
+    <value>删除中...</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="NewFiles" xml:space="preserve">
+    <value>新文件</value>
+  </data>
+  <data name="FileUploadedSuccessfully" xml:space="preserve">
+    <value>文件上传成功</value>
+  </data>
+  <data name="UploadFailed" xml:space="preserve">
+    <value>上传失败</value>
+  </data>
+  <data name="ReadyToUpload" xml:space="preserve">
+    <value>准备上传</value>
+  </data>
+  <data name="Uploading" xml:space="preserve">
+    <value>上传中...</value>
+  </data>
+  <data name="InvalidFileType" xml:space="preserve">
+    <value>无效的文件类型</value>
+  </data>
+  <data name="Complete" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <!-- Secondary Content for Allowed File Types -->
+  <data name="AllowedPrefix" xml:space="preserve">
+    <value>允许的</value>
+  </data>
+</root>

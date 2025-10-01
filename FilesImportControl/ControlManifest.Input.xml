@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest>
+  <control namespace="capgemini" constructor="FluentFilesImportControl" version="2.0.23" display-name-key="Coca - File Import Control" description-key="Allow to select file or files and upload them to azure blob storage using Power Automate cloud flows." control-type="virtual" >
+    <!--external-service-usage node declares whether this 3rd party PCF control is using external service or not, if yes, this control will be considered as premium and please also add the external domain it is using.
+    If it is not using any external service, please set the enabled="false" and DO NOT add any domain below. The "enabled" will be false by default.
+    Example1:
+      <external-service-usage enabled="true">
+        <domain>www.Microsoft.com</domain>
+      </external-service-usage>
+    Example2:
+      <external-service-usage enabled="false">
+      </external-service-usage>
+    -->
+    <external-service-usage enabled="true">
+      <domain>logic.azure.com</domain>
+    </external-service-usage>
+    <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
+    <!-- General -->
+    <property name="Text" display-name-key="Text" description-key="Text to display in the button." of-type="SingleLine.Text" usage="bound" required="true" default-value="File upload"/>
+    <property name="ButtonIcon" display-name-key="ButtonIcon" description-key="Icon to display in the button." of-type="SingleLine.Text" usage="bound" required="true" default-value="Attach" />
+    <property name="IconStyle" display-name-key="Icon style" description-key="Whether the icon style should be outline or filled." of-type="Enum" usage="input" required="true" default-value="0">
+      <value name="Outline" display-name-key="Outline">0</value>
+      <value name="Filled" display-name-key="Filled">1</value>
+    </property>    
+    <property name="Visible" display-name-key="Visible" description-key="Show or hide the button." of-type="TwoOptions" usage="input" required="true" default-value="true" />
+    <!-- Behavior -->
+    <property name="DisplayMode" display-name-key="Display mode" description-key="Visual state of the button." of-type="Enum" usage="input" required="true" default-value="0">
+      <value name="Edit" display-name-key="Edit">0</value>
+      <value name="Disabled" display-name-key="Disabled">1</value>
+      <value name="View" display-name-key="View">2</value>
+      <value name="Admin" display-name-key="Admin">3</value>
+    </property>
+    <!-- Size and pozition -->
+    <property name="Width" display-name-key="Width" description-key="Button width of the button." of-type="Whole.None" usage="input" required="true" default-value="128" />
+    <property name="Height" display-name-key="Height" description-key="Button height of the button." of-type="Whole.None" usage="input" required="true" default-value="32" />
+    <!-- Style and theme -->
+    <property name="Appearance" display-name-key="Appearance" description-key="A button can have its content and borders styled for greater emphasis or to be subtle." of-type="Enum" usage="input" required="true" default-value="0">
+      <value name="Primary" display-name-key="Primary">0</value>
+      <value name="Secondary" display-name-key="Secondary">1</value>
+      <value name="Outline" display-name-key="Outline">2</value>
+      <value name="Subtle" display-name-key="Subtle">3</value>
+      <value name="Transparent" display-name-key="Transparent">4</value>
+    </property>
+    <property name="Align" display-name-key="Align" description-key="Align" of-type="Enum" usage="input" required="true" default-value="1">
+      <value name="Left" display-name-key="Left">0</value>
+      <value name="Center" display-name-key="Center">1</value>
+      <value name="Right" display-name-key="Right">2</value>
+      <value name="Justify" display-name-key="Justify">3</value>
+    </property>
+    <property name="FontWeight" display-name-key="Font weight" description-key="Font weight" of-type="Enum" usage="input" required="true" default-value="2">
+      <value name="Bold" display-name-key="Bold">0</value>
+      <value name="Lighter" display-name-key="Lighter">1</value>
+      <value name="Normal" display-name-key="Normal">2</value>
+      <value name="Semibold" display-name-key="Semibold">3</value>
+    </property>
+    <property name="IconPosition" display-name-key="Icon position" description-key="A button can format its icon to appear before or after its content." of-type="Enum" usage="input" required="true" default-value="0">
+      <value name="Before" display-name-key="Before">0</value>
+      <value name="After" display-name-key="After">1</value>
+    </property>
+    <property name="Shape" display-name-key="Shape" description-key="A button can be rounded, circular, or square." of-type="Enum" usage="input" required="true" default-value="0">
+      <value name="Rounded" display-name-key="Rounded">0</value>
+      <value name="Circular" display-name-key="Circular">1</value>
+      <value name="Square" display-name-key="Square">2</value>
+    </property>
+    <property name="ButtonSize" display-name-key="Button size" description-key="A button supports different sizes." of-type="Enum" usage="input" required="true" default-value="0">
+      <value name="Small" display-name-key="Small">0</value>
+      <value name="Medium" display-name-key="Medium">1</value>
+      <value name="Large" display-name-key="Large">2</value>
+    </property>
+    <property name="DisabledFocusable" display-name-key="Disabled focusable" description-key="Show or hide the button." of-type="TwoOptions" usage="input" required="false" default-value="false " />
+    <!-- Extra properties -->
+    <property name="AllowMultipleFiles" display-name-key="Allow multiple files" description-key="Allow just one file or multiple files." of-type="TwoOptions" usage="input" required="false" default-value="true" />
+    <property name="AllowedFileTypes" display-name-key="Allowed file types" description-key="Provide the file extension names separated by a semicolon." of-type="SingleLine.Text" usage="bound" required="false" default-value="*"/>
+    <property name="AllowDropFiles" display-name-key="Allow drag and drop" description-key="Allow drag and drop." of-type="TwoOptions" usage="input" required="false" default-value="true" />
+    <property name="AllowDropFilesText" display-name-key="Allow drag and drop text." description-key="Allow drag and drop text." of-type="SingleLine.Text" usage="bound" required="false" default-value="Drop files here..."/>
+    <property name="ShowActionSpinner" display-name-key="Show action spinner" description-key="Display a spinner animation on the button during the upload process." of-type="TwoOptions" usage="input" required="false" default-value="true" />
+    <property name="MaxTotalFileSizeMB" display-name-key="Max total file size (MB)" description-key="Maximum total size in megabytes for all files combined. Default is 20 MB." of-type="Whole.None" usage="input" required="false" default-value="20" />
+
+    <!-- Cloud Flow Configuration -->
+    <property name="CloudFlowUploadUrl" display-name-key="Cloud Flow Upload URL" description-key="Complete trigger URL for the file upload Power Automate flow" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="CloudFlowListFilesUrl" display-name-key="Cloud Flow List Files URL" description-key="Complete trigger URL for the list files Power Automate flow" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="CloudFlowDeleteUrl" display-name-key="Cloud Flow Delete URL" description-key="Complete trigger URL for the delete file Power Automate flow" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="CloudFlowDownloadUrl" display-name-key="Cloud Flow Download URL" description-key="Complete trigger URL for the download file Power Automate flow to download files" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="ContainerPath" display-name-key="Container Path" description-key="Storage account name." of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="ListFilesFolderName" display-name-key="List Files Folder Name" description-key="Container name to list existing files from. If specified, files from this folder will be displayed when the control loads." of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="RecordUid" display-name-key="Record UID" description-key="Unique identifier of the record for which files will be uploaded. When empty, control uses JSON processing instead of Cloud Flow." of-type="SingleLine.Text" usage="input" required="false" />
+
+    <!-- File -->
+    <property name="FilesAsJSON" display-name-key="Selected file(s)" description-key="Selected file(s)" of-type="SingleLine.Text" usage="output" required="false" hidden="false" default-value=""/>
+    <property name="ExistingFiles" display-name-key="Existing Files" description-key="List of existing files in the specified folder" of-type="Multiple" usage="output" required="false" />
+    <property name="UploadResults" display-name-key="Upload Results" description-key="Results of the Cloud Flow upload operation" of-type="Multiple" usage="output" required="false" />
+    <property name="LastUploadStatus" display-name-key="Last Upload Status" description-key="Status of the last upload operation" of-type="Enum" usage="output" required="false">
+      <value name="None" display-name-key="None">0</value>
+      <value name="InProgress" display-name-key="In Progress">1</value>
+      <value name="Completed" display-name-key="Completed">2</value>
+      <value name="Failed" display-name-key="Failed">3</value>
+    </property>
+
+    <!--
+      Property node's of-type attribute can be of-type-group attribute.
+      Example:
+      <type-group name="numbers">
+        <type>Whole.None</type>
+        <type>Currency</type>
+        <type>FP</type>
+        <type>Decimal</type>
+      </type-group>
+      <property name="sampleProperty" display-name-key="Property_Display_Key" description-key="Property_Desc_Key" of-type-group="numbers" usage="bound" required="true" />
+    -->
+    <resources>
+      <code path="index.ts" order="1"/>
+      <platform-library name="React" version="16.14.0" />
+      <platform-library name="Fluent" version="9.46.2" />
+      <!-- Resource files for multilingual support -->
+      <resx path="strings/FilesImportControl.1033.resx" version="1.0.0" />
+      <resx path="strings/FilesImportControl.1034.resx" version="1.0.0" />
+      <resx path="strings/FilesImportControl.1046.resx" version="1.0.0" />
+    </resources>
+    <!-- UNCOMMENT TO ENABLE THE SPECIFIED API
+    <feature-usage>
+      <uses-feature name="Device.captureAudio" required="true" />
+      <uses-feature name="Device.captureImage" required="true" />
+      <uses-feature name="Device.captureVideo" required="true" />
+      <uses-feature name="Device.getBarcodeValue" required="true" />
+      <uses-feature name="Device.getCurrentPosition" required="true" />
+      <uses-feature name="Device.pickFile" required="true" />
+      <uses-feature name="Utility" required="true" />
+      <uses-feature name="WebAPI" required="true" />
+    </feature-usage>
+    -->
+  </control>
+</manifest>
